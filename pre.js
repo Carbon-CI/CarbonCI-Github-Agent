@@ -7,8 +7,10 @@ const path = require('path');
 // GitHub converts input name hyphens to underscores: api-key → INPUT_API_KEY
 const apiKey = env['INPUT_API_KEY'];
 
-// Persist api-key to a temp file so post.js can read it (same runner)
 const stateFile = path.join(os.tmpdir(), `carbon-ci-${env['GITHUB_RUN_ID']}-${env['GITHUB_JOB']}.json`);
+console.log(`[carbon-ci] pre: GITHUB_RUN_ID=${env['GITHUB_RUN_ID']} GITHUB_JOB=${env['GITHUB_JOB']}`);
+console.log(`[carbon-ci] pre: stateFile=${stateFile}`);
+console.log(`[carbon-ci] pre: apiKey present=${!!apiKey}`);
 fs.writeFileSync(stateFile, JSON.stringify({ apiKey }));
 
 console.log('Starting Carbon CI monitoring...');
