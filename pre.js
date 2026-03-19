@@ -4,10 +4,13 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-// GitHub converts input name hyphens to underscores: api-key → INPUT_API_KEY
-const apiKey = env['INPUT_API_KEY'];
+// Runner may keep hyphen (INPUT_API-KEY) or convert to underscore (INPUT_API_KEY)
+const apiKey = env['INPUT_API_KEY'] || env['INPUT_API-KEY'];
 
 const stateFile = path.join(os.tmpdir(), `carbon-ci-${env['GITHUB_RUN_ID']}-${env['GITHUB_JOB']}.json`);
+// Diagnostic: show all INPUT_ vars (names only, not values)
+const inputVarNames = Object.keys(env).filter(k => k.startsWith('INPUT_'));
+console.log(`[carbon-ci] pre: INPUT vars found: ${inputVarNames.join(', ')}`);
 console.log(`[carbon-ci] pre: GITHUB_RUN_ID=${env['GITHUB_RUN_ID']} GITHUB_JOB=${env['GITHUB_JOB']}`);
 console.log(`[carbon-ci] pre: stateFile=${stateFile}`);
 console.log(`[carbon-ci] pre: apiKey present=${!!apiKey}`);
