@@ -1,6 +1,8 @@
 const { execSync } = require('child_process');
 const { env } = require('process');
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 // GitHub converts input name hyphens to underscores: api-key → INPUT_API_KEY
 const apiKey   = env['INPUT_API_KEY'];
@@ -9,12 +11,9 @@ const pipeline = env['GITHUB_RUN_ID'];
 const job      = env['GITHUB_JOB'];
 const runner   = env['RUNNER_NAME'];
 
-// Save values to GitHub Actions state so post.js can read them
-if (env['GITHUB_STATE']) {
-  fs.appendFileSync(env['GITHUB_STATE'],
-    `CARBON_CI_API_KEY=${apiKey}\nCARBON_CI_PROJECT=${project}\nCARBON_CI_PIPELINE=${pipeline}\nCARBON_CI_JOB=${job}\nCARBON_CI_RUNNER=${runner}\n`
-  );
-}
+// Persist values to a temp file so post.js can read them (same runner)
+const stateFile = path.join(os.tmpdir(), `carbon-ci-${env['GITHUB_RUN_ID']}-${env['GITHUB_JOB']}.json`);
+fs.writeFileSync(stateFile, JSON.stringify({ apiKey, project, pipeline, job, runner }));
 
 console.log('Starting Carbon CI monitoring...');
 
