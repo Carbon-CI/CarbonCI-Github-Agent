@@ -11,9 +11,9 @@ const pipeline = env['GITHUB_RUN_ID'];
 const job      = env['GITHUB_JOB'];
 const runner   = env['RUNNER_NAME'];
 
-// Persist values to a temp file so post.js can read them (same runner)
+// Persist api-key to a temp file so post.js can read it (same runner)
 const stateFile = path.join(os.tmpdir(), `carbon-ci-${env['GITHUB_RUN_ID']}-${env['GITHUB_JOB']}.json`);
-fs.writeFileSync(stateFile, JSON.stringify({ apiKey, project, pipeline, job, runner }));
+fs.writeFileSync(stateFile, JSON.stringify({ apiKey }));
 
 console.log('Starting Carbon CI monitoring...');
 
@@ -24,7 +24,15 @@ try {
   execSync('curl -sSL https://carbon-ci.fr/install.sh | bash', { stdio: 'inherit' });
 }
 
-execSync(
-  `carbon-ci start --api-key "${apiKey}" --project "${project}" --pipeline "${pipeline}" --job "${job}" --runner "${runner}"`,
-  { stdio: 'inherit' }
-);
+// install.sh reads GitLab-named env vars — map GitHub vars to them
+execSync('carbon-ci start', {
+  stdio: 'inherit',
+  env: {
+    ...env,
+    CARBON_CI_API_KEY:      apiKey,
+    CI_PROJECT_PATH:        project,
+    CI_PIPELINE_ID:         pipeline,
+    CI_JOB_ID:              job,
+    CI_RUNNER_DESCRIPTION:  runner,
+  }
+});
