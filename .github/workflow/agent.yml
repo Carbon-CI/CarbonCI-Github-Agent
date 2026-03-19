@@ -1,0 +1,23 @@
+name: Carbon CI
+description: Monitor CI job carbon emissions
+inputs:
+  api-key:
+    description: Carbon CI API key
+    required: true
+
+runs:
+  using: composite
+  pre-if: always()
+  pre: |
+    if ! command -v carbon-ci >/dev/null 2>&1; then
+      curl -sSL https://carbon-ci.fr/install.sh | bash
+    fi
+    carbon-ci start \
+      --api-key "${{ inputs.api-key }}" \
+      --project "${{ github.repository }}" \
+      --pipeline "${{ github.run_id }}" \
+      --job "${{ github.job }}"
+  post-if: always()
+  post: |
+    carbon-ci stop
+  steps: []
