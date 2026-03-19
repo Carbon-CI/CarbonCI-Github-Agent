@@ -4,17 +4,19 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-// Read api-key written by pre.js
 const stateFile = path.join(os.tmpdir(), `carbon-ci-${env['GITHUB_RUN_ID']}-${env['GITHUB_JOB']}.json`);
+console.log(`[carbon-ci] post: GITHUB_RUN_ID=${env['GITHUB_RUN_ID']} GITHUB_JOB=${env['GITHUB_JOB']}`);
+console.log(`[carbon-ci] post: stateFile=${stateFile}`);
+console.log(`[carbon-ci] post: stateFile exists=${fs.existsSync(stateFile)}`);
+
 const { apiKey } = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
+console.log(`[carbon-ci] post: apiKey present=${!!apiKey}`);
 
 console.log('Stopping Carbon CI monitoring...');
 
-// install.sh stop reads CARBON_CI_API_KEY env var
 execSync('carbon-ci stop', {
   stdio: 'inherit',
   env: { ...env, CARBON_CI_API_KEY: apiKey }
 });
 
-// Cleanup
 fs.unlinkSync(stateFile);
